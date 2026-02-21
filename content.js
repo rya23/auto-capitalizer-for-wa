@@ -52,6 +52,7 @@ function attachListener() {
 
     box.addEventListener("keydown", function (e) {
         if (e.key === " " || e.code === "Space") {
+            // Let WhatsApp insert the space first
             setTimeout(() => {
                 try {
                     const selection = window.getSelection();
@@ -64,26 +65,24 @@ function attachListener() {
 
                     let text = node.textContent;
 
-                    // 1️⃣ Double space → convert to ". "
-                    if (text.endsWith("  ")) {
-                        text = text.slice(0, -2) + ". ";
+                    // Capitalize first letter of entire message
+                    if (text.length === 1) {
+                        node.textContent = text.toUpperCase();
+                        return;
                     }
 
-                    // 2️⃣ Capitalize start of message
-                    text = text.replace(/^\w/, (c) => c.toUpperCase());
+                    // Capitalize word after punctuation
+                    const updated = text.replace(/(^\w|[.!?]\s+\w)/g, (c) => c.toUpperCase());
 
-                    // 3️⃣ Capitalize after punctuation
-                    text = text.replace(/([.!?]\s+)(\w)/g, (match, p1, p2) => {
-                        return p1 + p2.toUpperCase();
-                    });
+                    if (text !== updated) {
+                        node.textContent = updated;
 
-                    node.textContent = text;
-
-                    // Restore cursor to end
-                    range.setStart(node, text.length);
-                    range.collapse(true);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
+                        // Restore cursor to end
+                        range.setStart(node, updated.length);
+                        range.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
                 } catch (err) {
                     console.error("[WA-AutoCaps] Space format error:", err);
                 }
