@@ -88,6 +88,36 @@ function attachListener() {
                 }
             }, 0);
         }
+
+        if (e.key === "Enter" && !e.shiftKey) {
+            // Process synchronously before the message is sent
+            try {
+                const selection = window.getSelection();
+                if (!selection.rangeCount) return;
+
+                const range = selection.getRangeAt(0);
+                const node = range.startContainer;
+
+                if (!node || node.nodeType !== Node.TEXT_NODE) return;
+
+                let text = node.textContent;
+
+                // Capitalize first word and any word following sentence-ending punctuation
+                const updated = text.replace(/(^\w|[.!?]\s+\w)/g, (c) => c.toUpperCase());
+
+                if (text !== updated) {
+                    node.textContent = updated;
+
+                    // Restore cursor to end
+                    range.setStart(node, updated.length);
+                    range.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
+            } catch (err) {
+                console.error("[WA-AutoCaps] Enter format error:", err);
+            }
+        }
     });
 }
 
